@@ -13,7 +13,7 @@ class Level:
         self.visible_sprite = YSortCamaraGroup()
         self.obstacles_sprite = pygame.sprite.Group()
         self.net = Network()
-        self.p1 = self.net.getP()
+
         # Sprite Setup
         self.create_map()
 
@@ -31,6 +31,7 @@ class Level:
 
     def run(self):
         # Update and Draw the game
+        self.p1 = self.net.getP()
         p2 = self.net.send(self.p1)
         self.visible_sprite.custom_draw(self.player1, p2)
         self.visible_sprite.update()

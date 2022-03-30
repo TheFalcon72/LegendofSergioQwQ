@@ -5,7 +5,7 @@ import sys
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-server = '192.168.0.13'
+server = socket.gethostname()
 port = 1234
 
 server_ip = socket.gethostbyname(server)
