@@ -2,6 +2,7 @@ import pygame
 from settings import *
 from tile import Tile
 from player import Player
+from network import Network
 from debug import debug
 
 
@@ -11,7 +12,8 @@ class Level:
         # Sprite Group Setup
         self.visible_sprite = YSortCamaraGroup()
         self.obstacles_sprite = pygame.sprite.Group()
-
+        self.net = Network()
+        self.p1 = self.net.getP()
         # Sprite Setup
         self.create_map()
 
@@ -23,11 +25,14 @@ class Level:
                 if col == 'x':
                     Tile((x, y), [self.visible_sprite, self.obstacles_sprite])
                 if col == 'p':
-                    self.player = Player((x, y), [self.visible_sprite], self.obstacles_sprite)
+                    self.player1 = Player((x, y), [self.visible_sprite], self.obstacles_sprite)
+                if col == 'q':
+                    self.player2 = Player((x, y), [self.visible_sprite], self.obstacles_sprite)
 
     def run(self):
         # Update and Draw the game
-        self.visible_sprite.custom_draw(self.player)
+        p2 = self.net.send(self.p1)
+        self.visible_sprite.custom_draw(self.player1, p2)
         self.visible_sprite.update()
 
 
@@ -42,12 +47,12 @@ class YSortCamaraGroup(pygame.sprite.Group):
         self.half_height = self.display_surface.get_size()[1] // 2
         self.offset = pygame.math.Vector2()
 
-    def custom_draw(self, player):
+    def custom_draw(self, player1, player2):
         # getting the offset
-        self.offset.x = player.rect.centerx - self.half_width
-        self.offset.y = player.rect.centery - self.half_height
+        self.offset.x = player1.rect.centerx - self.half_width
+        self.offset.y = player1.rect.centery - self.half_height
 
-        #for sprite in self.sprites(jjj):
+        #for sprite in self.sprites():
         for sprite in sorted(self.sprites(), key = lambda sprite: sprite.rect.centery):
             offset_pos = sprite.rect.topleft - self.offset
             self.display_surface.blit(sprite.image, offset_pos)

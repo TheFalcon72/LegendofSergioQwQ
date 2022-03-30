@@ -1,11 +1,12 @@
 import socket
 from _thread import *
+from settings import *
 import sys
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-server = 'localhost'
-port = 5555
+server = '192.168.0.13'
+port = 1234
 
 server_ip = socket.gethostbyname(server)
 
@@ -19,7 +20,7 @@ s.listen(2)
 print("Waiting for a connection")
 
 currentId = "0"
-pos = ["0:50,50", "1:100,100"]
+pos = ["0:64,64", "1:1152,11152"]
 
 
 def threaded_client(conn):
