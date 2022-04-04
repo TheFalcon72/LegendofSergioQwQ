@@ -1,62 +1,72 @@
 import socket
 from _thread import *
+
+import pygame.sprite
+
+from level import YSortCamaraGroup
+from player import Player
 from settings import *
-import sys
-
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-server = socket.gethostname()
-port = 1234
-
-server_ip = socket.gethostbyname(server)
-
-try:
-    s.bind((server, port))
-
-except socket.error as e:
-    print(str(e))
-
-s.listen(2)
-print("Waiting for a connection")
-
-currentId = "0"
-pos = ["0:64,64", "1:1152,11152"]
+from tile import Tile
+import pickle
 
 
-def threaded_client(conn):
-    global currentId, pos
-    conn.send(str.encode(currentId))
-    currentId = "1"
-    reply = ''
-    while True:
+class Server:
+    def __init__(self):
+        self.visible_sprite = YSortCamaraGroup
+        self.obstacles_sprite = pygame.sprite.Group()
+        self.server = "192.168.0.13"
+        self.port = 5555
+
+        self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.players = []
+        self.bind()
+        self.find_players()
+    def bind(self):
         try:
-            data = conn.recv(2048)
-            reply = data.decode('utf-8')
-            if not data:
-                conn.send(str.encode("Goodbye"))
+            self.s.bind((self.server, self.port))
+        except socket.error as e:
+            str(e)
+
+        self.s.listen(2)
+        print("Waiting for a connection, Server Started")
+
+    def find_players(self):
+        self.players = ["64,64", "1152,1152"]
+
+    def threaded_client(self, conn, player):
+        conn.send(pickle.dumps(self.players[player]))
+        reply = ""
+        while True:
+            try:
+                data = pickle.loads(conn.recv(2048))
+                self.players[player] = data
+
+                if not data:
+                    print("Disconnected")
+                    break
+                else:
+                    if player == 1:
+                        reply = self.players[0]
+                    else:
+                        reply = self.players[1]
+
+                    print("Received: ", data)
+                    print("Sending : ", reply)
+
+                conn.sendall(pickle.dumps(reply))
+            except:
                 break
-            else:
-                print("Received: " + reply)
-                arr = reply.split(":")
-                id = int(arr[0])
-                pos[id] = reply
 
-                if id == 0: nid = 1
-                if id == 1: nid = 0
-
-                reply = pos[nid][:]
-                print("Sending: " + reply)
-
-            conn.sendall(str.encode(reply))
-        except:
-            break
-
-    print("Connection Closed")
-    conn.close()
+        print("Lost connection")
+        conn.close()
 
 
-while True:
-    conn, addr = s.accept()
-    print("Connected to: ", addr)
+if __name__ == '__main__':
+    server = Server()
+    currentPlayer = 0
+    while True:
+        conn, addr = server.s.accept()
+        print("Connected to:", addr)
 
-    start_new_thread(threaded_client, (conn,))
+        start_new_thread(server.threaded_client, (conn, currentPlayer))
+        currentPlayer += 1
