@@ -11,7 +11,7 @@ import pickle
 
 
 class Server:
-    def __init__(self):
+    def _init_(self):
         self.visible_sprite = YSortCamaraGroup
         self.obstacles_sprite = pygame.sprite.Group()
         self.server = "192.168.0.13"
@@ -28,7 +28,7 @@ class Server:
             str(e)
 
         self.s.listen(2)
-        print("Waiting for a connection, Server Started")
+        print("Esperando Conexion, Servidor Iniciado")
 
     def find_players(self):
         self.players = ["64,64", "1152,1152"]
@@ -61,7 +61,7 @@ class Server:
         conn.close()
 
 
-if __name__ == '__main__':
+if _name_ == '_main_':
     server = Server()
     currentPlayer = 0
     while True:
