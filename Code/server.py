@@ -4,23 +4,19 @@ from _thread import *
 import pygame.sprite
 
 from level import YSortCamaraGroup
-from player import Player
-from settings import *
-from tile import Tile
 import pickle
 
 
 class Server:
-    def _init_(self):
-        self.visible_sprite = YSortCamaraGroup
-        self.obstacles_sprite = pygame.sprite.Group()
+    def __init__(self):
         self.server = "192.168.0.13"
         self.port = 5555
 
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.players = []
         self.bind()
+        self.players = []
         self.find_players()
+
     def bind(self):
         try:
             self.s.bind((self.server, self.port))
@@ -31,14 +27,21 @@ class Server:
         print("Esperando Conexion, Servidor Iniciado")
 
     def find_players(self):
-        self.players = ["64,64", "1152,1152"]
+        self.players = [(64,64), (1152,1152)]
+
+    def read_pos(self, str):
+        str = str.split(",")
+        return int(str[0]), int(str[1])
+
+    def make_pos(self, tup):
+        return str(tup[0]) + "," + str(tup[1])
 
     def threaded_client(self, conn, player):
-        conn.send(pickle.dumps(self.players[player]))
+        conn.send(str.encode(self.make_pos(self.players[player])))
         reply = ""
         while True:
             try:
-                data = pickle.loads(conn.recv(2048))
+                data = self.read_pos(conn.recv(2048).decode())
                 self.players[player] = data
 
                 if not data:
@@ -53,7 +56,7 @@ class Server:
                     print("Received: ", data)
                     print("Sending : ", reply)
 
-                conn.sendall(pickle.dumps(reply))
+                conn.sendall(str.encode(self.make_pos(reply)))
             except:
                 break
 
@@ -61,7 +64,7 @@ class Server:
         conn.close()
 
 
-if _name_ == '_main_':
+if __name__ == '__main__':
     server = Server()
     currentPlayer = 0
     while True:
