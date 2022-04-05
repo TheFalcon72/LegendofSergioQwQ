@@ -8,12 +8,13 @@ from debug import debug
 
 class Level:
     def __init__(self):
-
         # Sprite Group Setup
+        self.p2Pos = None
+        self.string = None
         self.visible_sprite = YSortCamaraGroup()
         self.obstacles_sprite = pygame.sprite.Group()
         self.net = Network()
-
+        self.p1 = []
         # Sprite Setup
         self.create_map()
 
@@ -29,11 +30,22 @@ class Level:
                 if col == 'q':
                     self.player2 = Player((x, y), [self.visible_sprite], self.obstacles_sprite)
 
+    def read_pos(self, str):
+        str = str.split(",")
+        return int(str[0]), int(str[1])
+
+    def make_pos(self, tup):
+        return str(tup[0]) + "," + str(tup[1])
+
     def run(self):
+        self.visible_sprite.custom_draw(self.player1, self.player2)
         # Update and Draw the game
-        self.p1 = self.net.getP()
-        p2 = self.net.send(self.p1)
-        self.visible_sprite.custom_draw(self.player1, p2)
+        self.p1.insert(self.player1.rect.x, self.player1.rect.y)
+
+        self.p2Pos = self.read_pos(self.net.send(self.make_pos((self.player1.rect.x, self.player1.rect.y))))
+        self.player2.hitbox.x = self.p2Pos[0]
+        self.player2.hitbox.y = self.p2Pos[1]
+        self.player2.update()
         self.visible_sprite.update()
 
 
