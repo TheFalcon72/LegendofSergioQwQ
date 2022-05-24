@@ -9,8 +9,8 @@ import pickle
 
 class Server:
     def __init__(self):
-        self.server = "192.168.0.13"
-        self.port = 5555
+        self.server = "172.18.8.57"
+        self.port = 5556
 
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.bind()
